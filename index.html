@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>🐍 Python Core & OOP Challenge</title>
 <style>
+  /* ── FULLY OFFLINE FONT STACK ──────────────────────────────
+     Syne  → replaced by: Futura / Century Gothic / Trebuchet
+     Space Mono → replaced by: Courier New / monospace system font
+     No external requests. Works 100% offline & on any host.
+  ─────────────────────────────────────────────────────────── */
   @font-face {
     font-family: 'Syne';
     font-style: normal;
@@ -368,7 +373,7 @@
     <div id="phaseLabel" class="phase-label"></div>
     <div id="questionArea"></div>
     <div class="nav">
-      <button class="btn btn-ghost" id="skipBtn" onclick="skipQuestion()">Skip</button>
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
       <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
     </div>
   </div>
@@ -749,6 +754,7 @@ function renderQuestion() {
   document.getElementById('scoreTrack').textContent = `Score: ${score}`;
   document.getElementById('phaseLabel').textContent = phases[q.phase];
   document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
 
   const labels = ['A','B','C','D'];
   let html = `
@@ -768,7 +774,7 @@ function renderQuestion() {
     </div>`;
   document.getElementById('questionArea').innerHTML = html;
 
-  // restore if already answered (navigating back — not supported in this flow, but handle skip)
+  // restore state if returning to a previously answered question
   if (userAnswers[current] !== null) {
     revealAnswer(userAnswers[current]);
   }
@@ -800,10 +806,15 @@ function revealAnswer(idx){
   document.getElementById('scoreTrack').textContent = `Score: ${score}`;
 }
 
-function skipQuestion() {
-  if (answered) { nextQuestion(); return; }
-  userAnswers[current] = -1; // skipped
-  nextQuestion();
+function prevQuestion() {
+  if (current === 0) return; // already at first question
+  // If current answer was just scored, undo it
+  if (userAnswers[current] !== null && userAnswers[current] !== -1) {
+    if (userAnswers[current] === questions[current].ans) score--;
+  }
+  userAnswers[current] = null; // clear so it can be re-answered
+  current--;
+  renderQuestion();
 }
 
 function nextQuestion() {
