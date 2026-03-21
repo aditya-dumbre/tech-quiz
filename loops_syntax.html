@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 Loops & Syntax Quiz — Python Quiz Hub</title>
+<style>
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #fb923c;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(251,146,60,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(251,146,60,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; color:var(--muted);
+    font-family:'Syne',sans-serif; font-size:.82rem; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#fb923c,#f59e0b); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+
+  .phase-label {
+    display:inline-flex; align-items:center;
+    background:var(--border); border-radius:99px;
+    padding:4px 14px; font-size:.78rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:20px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1e1e2a; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#fb923c,#f59e0b); color:#000; box-shadow:0 4px 20px rgba(251,146,60,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(251,146,60,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>🔁 Loops &amp; Syntax</h2>
+        <p>30 questions · sprint · essentials → peak</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 30</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#fb923c"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 30</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA — Syntax & Loops Sprint (30 Qs)
+   phase: 0 = 🟢 Essentials, 1 = 🟡 Core, 2 = 🔴 Peak
+============================================================ */
+const ROUNDS = ['🟢 Round 1: Essentials', '🟡 Round 2: Core', '🔴 Round 3: The Peak'];
+
+const questions = [
+
+  // ── ROUND 1: ESSENTIALS (Q1–15) ──
+  {
+    phase:0,
+    text:"What is the output of this snippet?",
+    code:`x = "5" + "5"\nprint(int(x) + 5)`,
+    opts:["15 (Integer)","555 (Integer)","60 (Integer)","10 (Integer)"],
+    ans:0,
+    expl:`<code>"5" + "5"</code> is string concatenation → <code>"55"</code>. Then <code>int("55")</code> → <code>55</code>. Finally <code>55 + 5</code> → <strong>60</strong>. Wait — re-checking: <code>int("55") + 5 = 60</code>. The correct answer is <strong>60</strong>.`
+  },
+  {
+    phase:0,
+    text:"Which of these is a valid multi-line comment?",
+    opts:["/* Comment */","## Comment ##","''' Comment '''","// Comment //"],
+    ans:2,
+    expl:`Python doesn't have a true multi-line comment syntax, but a <strong>triple-quoted string</strong> (<code>'''</code> or <code>\"\"\"</code>) that isn't assigned to anything acts as a multi-line comment. <code>/**/</code> is C-style, <code>//</code> is JavaScript-style — neither works in Python.`
+  },
+  {
+    phase:0,
+    text:"What does this loop print?",
+    code:`for i in range(1, 4):\n    print(i, end="")`,
+    opts:["1234","0123","123","012"],
+    ans:2,
+    expl:`<code>range(1, 4)</code> generates <code>1, 2, 3</code> (stop value 4 is excluded). <code>end=""</code> suppresses newlines, printing everything on one line → <strong>123</strong>.`
+  },
+  {
+    phase:0,
+    text:"How do you start an infinite loop in Python?",
+    opts:["loop True:","while True:","for True:","until True:"],
+    ans:1,
+    expl:`<code>while True:</code> is the standard Python infinite loop. <code>loop</code> and <code>until</code> are not Python keywords. <code>for True:</code> is a <code>SyntaxError</code> — <code>for</code> requires an iterable, not a boolean.`
+  },
+  {
+    phase:0,
+    text:"What is the output of print(2 * 3 ** 2)?",
+    code:`print(2 * 3 ** 2)`,
+    opts:["36 (Integer)","18 (Integer)","64 (Integer)","12 (Integer)"],
+    ans:1,
+    expl:`Operator precedence: <code>**</code> (exponentiation) binds tighter than <code>*</code>. So it evaluates as <code>2 * (3 ** 2)</code> = <code>2 * 9</code> = <strong>18</strong>. If you meant <code>(2 * 3) ** 2</code> = 36, you'd need explicit parentheses.`
+  },
+  {
+    phase:0,
+    text:"Which function is used to accept user input as a string?",
+    opts:["get_input()","read_line()","input()","scan()"],
+    ans:2,
+    expl:`<code>input()</code> is Python's built-in for reading user input — it always returns a <strong>string</strong>. To get an integer, wrap it: <code>int(input())</code>. The other options don't exist in Python's standard library.`
+  },
+  {
+    phase:0,
+    text:'What is the result of bool("0")?',
+    code:`bool("0")`,
+    opts:["False","True","Error","None"],
+    ans:1,
+    expl:`Any <strong>non-empty string</strong> is truthy in Python — including <code>"0"</code>. Only the empty string <code>""</code> is falsy. <code>bool("0")</code> → <strong>True</strong>. This is a common gotcha when coming from other languages where <code>"0"</code> is falsy.`
+  },
+  {
+    phase:0,
+    text:"Identify the output:",
+    code:`s = "Python"\nprint(s[2:])`,
+    opts:["Pyth","thon","ytho","yth"],
+    ans:1,
+    expl:`<code>s[2:]</code> slices from index 2 to the end. <code>"Python"</code> → P(0) y(1) t(2) h(3) o(4) n(5). Starting at index 2: <strong>thon</strong>.`
+  },
+  {
+    phase:0,
+    text:"Which operator is used for floor division?",
+    opts:["/ (Slash)","% (Percent)","// (Double)","div (Text)"],
+    ans:2,
+    expl:`<code>//</code> is the <strong>floor division</strong> operator — it divides and rounds down to the nearest integer. <code>7 // 2</code> = <code>3</code>. <code>/</code> is true division (returns float), <code>%</code> is modulo (remainder).`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`x = 10\nif x == 10:\nprint("Ten")`,
+    opts:["Ten (String)","Nothing","IndentationError","SyntaxError"],
+    ans:2,
+    expl:`The <code>print("Ten")</code> statement is not indented inside the <code>if</code> block. Python uses <strong>indentation to define code blocks</strong> — missing indentation raises an <code>IndentationError</code> before the code even runs.`
+  },
+  {
+    phase:0,
+    text:'How do you find the length of the string s = "Data"?',
+    opts:["s.length()","size(s)","len(s)","count(s)"],
+    ans:2,
+    expl:`<code>len()</code> is Python's universal built-in for measuring length — works on strings, lists, tuples, dicts, sets. <code>s.length()</code> doesn't exist in Python (that's JavaScript). <code>size()</code> and <code>count()</code> are not standard built-ins for this.`
+  },
+  {
+    phase:0,
+    text:"What does 10 != 10 evaluate to?",
+    code:`10 != 10`,
+    opts:["True","False","Error","None"],
+    ans:1,
+    expl:`<code>!=</code> is the <strong>not-equal</strong> operator. Since <code>10</code> equals <code>10</code>, the expression is <strong>False</strong>. <code>10 == 10</code> would be <code>True</code>.`
+  },
+  {
+    phase:0,
+    text:"Which of these creates a list?",
+    opts:["x = (1, 2)","x = {1, 2}","x = [1, 2]","x = <1, 2>"],
+    ans:2,
+    expl:`<code>[1, 2]</code> creates a <strong>list</strong>. <code>(1, 2)</code> is a tuple. <code>{1, 2}</code> is a set. <code>&lt;1, 2&gt;</code> is not valid Python syntax.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`for x in "AB":\n    print(x, x)`,
+    opts:["AB AB","A A B B","A B A B","AA BB"],
+    ans:1,
+    expl:`The loop iterates over each character: first <code>x = 'A'</code>, prints <code>A A</code> (with a space between). Then <code>x = 'B'</code>, prints <code>B B</code>. Output on two lines: <strong>A A</strong> then <strong>B B</strong>.`
+  },
+  {
+    phase:0,
+    text:"In range(5, 10), what is the last value generated?",
+    code:`range(5, 10)`,
+    opts:["10 (Integer)","9 (Integer)","11 (Integer)","5 (Integer)"],
+    ans:1,
+    expl:`<code>range(start, stop)</code> generates values from <code>start</code> up to but <strong>not including</strong> <code>stop</code>. <code>range(5, 10)</code> → 5, 6, 7, 8, <strong>9</strong>. The stop value 10 is never yielded.`
+  },
+
+  // ── ROUND 2: CORE (Q16–25) ──
+  {
+    phase:1,
+    text:"What is the output of this slice?",
+    code:`x = "Programming"\nprint(x[-3:])`,
+    opts:["ing (String)","nmi (String)","gni (String)","ming (String)"],
+    ans:0,
+    expl:`<code>x[-3:]</code> takes the last 3 characters. <code>"Programming"</code> ends in <code>…i, n, g</code>. <code>-3</code> = index 9 → <strong>ing</strong>.`
+  },
+  {
+    phase:1,
+    text:"What happens here?",
+    code:`i = 0\nwhile i < 3:\n    print(i)\n    i += 1\nelse:\n    print("End")`,
+    opts:["0 1 2","0 1 2 3","0 1 2 End","Error"],
+    ans:2,
+    expl:`The <code>while</code> loop prints <code>0</code>, <code>1</code>, <code>2</code> (while i &lt; 3). When the condition becomes False naturally (no <code>break</code>), the <code>else</code> block runs → prints <code>"End"</code>. Output: <strong>0 1 2 End</strong>.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`x = 0\ny = 5\nprint(x or y)`,
+    opts:["0 (Integer)","5 (Integer)","True","False"],
+    ans:1,
+    expl:`Python's <code>or</code> doesn't return a boolean — it returns the <strong>first truthy value</strong> or the last value if all are falsy. <code>x = 0</code> is falsy, so <code>or</code> evaluates the right operand and returns <code>y = 5</code> → prints <strong>5</strong>.`
+  },
+  {
+    phase:1,
+    text:"How many stars are printed?",
+    code:`for i in range(2):\n    for j in range(2):\n        print("*")`,
+    opts:["2 (Stars)","3 (Stars)","4 (Stars)","6 (Stars)"],
+    ans:2,
+    expl:`Outer loop runs 2 times (i = 0, 1). For each outer iteration, the inner loop runs 2 times (j = 0, 1). Total iterations: <code>2 × 2 = <strong>4</strong></code>. Four stars are printed.`
+  },
+  {
+    phase:1,
+    text:"What is the result?",
+    code:`s = "abc"\nprint(s.upper().lower())`,
+    opts:["ABC (String)","abc (String)","Abc (String)","Error"],
+    ans:1,
+    expl:`Method chaining: <code>s.upper()</code> → <code>"ABC"</code>. Then <code>.lower()</code> → <code>"abc"</code>. The intermediate <code>"ABC"</code> is discarded. Final output: <strong>abc</strong>.`
+  },
+  {
+    phase:1,
+    text:"What does this loop output?",
+    code:`for i in range(10):\n    if i % 2 == 0:\n        continue\n    print(i, end=" ")\n    if i == 3:\n        break`,
+    opts:["1 3 (String)","0 2 (String)","1 2 3 (String)","1 (String)"],
+    ans:0,
+    expl:`<code>continue</code> skips even numbers (0, 2, 4…). So only odd numbers are printed. Prints <code>1</code>, then <code>3</code>. When <code>i == 3</code>, <code>break</code> exits the loop. Output: <strong>1 3</strong>.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`x = [1, 2]\ny = [1, 2]\nprint(x is y)`,
+    opts:["True","False","Error","None"],
+    ans:1,
+    expl:`<code>is</code> checks <strong>object identity</strong> (same memory address). <code>x</code> and <code>y</code> are two independently created list objects — even though they have the same contents, they are different objects. <code>x is y</code> → <strong>False</strong>.`
+  },
+  {
+    phase:1,
+    text:"Which code correctly reverses a string s?",
+    opts:["s.reverse()","s[::-1]","reverse(s)","s[-1:0]"],
+    ans:1,
+    expl:`<code>s[::-1]</code> uses slice notation with step <code>-1</code> to traverse the string <strong>backwards</strong> — the standard Python idiom for string reversal. <code>s.reverse()</code> doesn't exist for strings (lists have <code>.reverse()</code>). <code>s[-1:0]</code> is missing the step and returns an empty string.`
+  },
+  {
+    phase:1,
+    text:"What happens when you run this?",
+    code:`while False:\n    print("Hi")`,
+    opts:["Prints Hi","Infinite loop","No output","SyntaxError"],
+    ans:2,
+    expl:`The condition is <code>False</code> from the start — the loop body is <strong>never entered</strong>. No output is produced. This is valid Python syntax; it just never executes.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`print("a" + "b" if 5 > 3 else "c")`,
+    opts:["ab (String)","c (String)","abc (String)","Error"],
+    ans:0,
+    expl:`The ternary expression is parsed as <code>("a" + "b") if (5 > 3) else "c"</code>. Since <code>5 > 3</code> is <code>True</code>, it evaluates the left side: <code>"a" + "b"</code> → <strong>ab</strong>.`
+  },
+
+  // ── ROUND 3: THE PEAK (Q26–30) ──
+  {
+    phase:2,
+    text:"What is the output of this logic?",
+    code:`x = [1, 2, 3]\nfor i in x:\n    x.remove(i)\nprint(x)`,
+    opts:["[] (List)","[2] (List)","[1, 3] (List)","[1, 2] (List)"],
+    ans:1,
+    expl:`<strong>Mutating a list while iterating over it</strong> is a classic trap. Iteration 1: <code>i=1</code>, removes <code>1</code> → list is <code>[2,3]</code>. Iteration 2: iterator skips to index 1 which is now <code>3</code>, removes <code>3</code> → list is <code>[2]</code>. The loop ends (only 2 items left but iterator already at index 2). Result: <strong>[2]</strong>.`
+  },
+  {
+    phase:2,
+    text:"What is the output of the following?",
+    code:`print(bool(0) == bool(""))`,
+    opts:["True","False","Error","None"],
+    ans:0,
+    expl:`<code>bool(0)</code> → <code>False</code>. <code>bool("")</code> → <code>False</code>. So it evaluates as <code>False == False</code> → <strong>True</strong>. Both <code>0</code> and empty string are falsy values in Python.`
+  },
+  {
+    phase:2,
+    text:"Analyze the range logic:",
+    code:`print(list(range(5, 2, -1)))`,
+    opts:["[5, 4, 3, 2]","[5, 4, 3]","[2, 3, 4, 5]","[] (Empty list)"],
+    ans:1,
+    expl:`<code>range(5, 2, -1)</code> counts <strong>down</strong> from 5, stopping before reaching 2 (exclusive). Values: 5, 4, 3 — then 2 would be the stop → excluded. Result: <strong>[5, 4, 3]</strong>.`
+  },
+  {
+    phase:2,
+    text:"What is the final value of count?",
+    code:`count = 0\nfor i in range(1, 3):\n    for j in range(i):\n        count += 1`,
+    opts:["2 (Integer)","3 (Integer)","4 (Integer)","6 (Integer)"],
+    ans:1,
+    expl:`Outer loop: <code>i=1</code> → inner <code>range(1)</code> → 1 iteration (+1). <code>i=2</code> → inner <code>range(2)</code> → 2 iterations (+2). Total: <code>1 + 2 = <strong>3</strong></code>.`
+  },
+  {
+    phase:2,
+    text:"What is the output?",
+    code:`x = 10\ny = 20\nx, y = y, x + y\nprint(x, y)`,
+    opts:["20 30","20 10","10 20","30 20"],
+    ans:0,
+    expl:`Python evaluates the <strong>right-hand side first</strong> using current values: <code>y</code> = 20, <code>x + y</code> = 10 + 20 = 30. Then assignments happen simultaneously: <code>x = 20</code>, <code>y = 30</code>. Output: <strong>20 30</strong>.`
+  }
+];
+
+// Fix Q1 answer — int("55") + 5 = 60, not 15
+questions[0].ans = 2;
+questions[0].expl = `<code>"5" + "5"</code> is string concatenation → <code>"55"</code>. Then <code>int("55")</code> converts to integer <code>55</code>. Finally <code>55 + 5</code> = <strong>60</strong>.`;
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0, score = 0, answered = false;
+let userAnswers = new Array(questions.length).fill(null);
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = ROUNDS[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      <div class="q-text">${q.text}</div>
+      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      <div class="options">
+        ${q.opts.map((o,i) => `
+          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_,i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 Syntax Sprinter!',    'Flawless — your mental compiler is top-tier.']
+          : pct>=.75? ['🎯 Sharp Coder',           'Strong performance — a few tricky bits to review.']
+          : pct>=.55? ['📚 Getting There',          'Good base — study the Peak questions in the analysis.']
+          : pct>=.35? ['🐣 Keep Practising',        'Review loops, slicing, and operator precedence.']
+          :           ['🔁 Back to Basics',          'Start with Python syntax fundamentals and retry.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Round breakdown
+  const tot=[0,0,0], cor=[0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#00c97a','#f59e0b','#ff5f7e'], names=['Essentials','Core','The Peak'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
+    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review list
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div>
+          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0; answered=false;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

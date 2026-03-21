@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 Exception Handling Quiz — Python Quiz Hub</title>
+<style>
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #e879f9;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(232,121,249,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,121,249,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; color:var(--muted);
+    font-family:'Syne',sans-serif; font-size:.82rem; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#e879f9,#a855f7); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+
+  .phase-label {
+    display:inline-flex; align-items:center;
+    background:var(--border); border-radius:99px;
+    padding:4px 14px; font-size:.78rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:20px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1e1a28; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── LAB CALLOUT ── */
+  .lab-tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(232,121,249,.1); border:1px solid rgba(232,121,249,.25);
+    border-radius:6px; padding:4px 10px; font-size:.72rem;
+    font-family:'Space Mono',monospace; color:var(--accent);
+    margin-bottom:10px; letter-spacing:.04em;
+  }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#e879f9,#a855f7); color:#fff; box-shadow:0 4px 20px rgba(232,121,249,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(232,121,249,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>🛡️ Exception Handling</h2>
+        <p>20 questions · foundations → peak · lab-aligned</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 20</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#e879f9"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 20</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA — Exception Handling Mock (20 Qs)
+   phase: 0 = 🟢 Foundations, 1 = 🟡 Intermediate, 2 = 🔴 Peak
+   lab: true = show ⚗️ Lab Question badge
+============================================================ */
+const ROUNDS = ['🟢 Round 1: Foundations', '🟡 Round 2: Intermediate', '🔴 Round 3: The Peak'];
+
+const questions = [
+
+  // ── ROUND 1: FOUNDATIONS (Q1–10) ──
+  {
+    phase:0,
+    text:"Which block is used to catch an error if it occurs?",
+    opts:["try (Keyword)","catch (Keyword)","except (Keyword)","error (Keyword)"],
+    ans:2,
+    expl:`In Python, <code>except</code> is the keyword that catches exceptions. <code>catch</code> is used in Java, C++, and JavaScript — not Python. The syntax is: <code>try: ... except SomeError: ...</code>`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`try:\n    print(1 / 0)\nexcept ZeroDivisionError:\n    print("Zero")`,
+    opts:["Zero (String)","Error (String)","None (Object)","1 (Integer)"],
+    ans:0,
+    expl:`<code>1 / 0</code> raises a <code>ZeroDivisionError</code>. The <code>except ZeroDivisionError</code> block catches it and executes <code>print("Zero")</code>. The original <code>print(1/0)</code> never completes → output is <strong>Zero</strong>.`
+  },
+  {
+    phase:0,
+    text:"Which block will ALWAYS execute, regardless of an error?",
+    opts:["try (Keyword)","catch (Keyword)","finally (Keyword)","else (Keyword)"],
+    ans:2,
+    expl:`The <code>finally</code> block <strong>always runs</strong> — whether an exception occurred or not, whether it was caught or not, and even if there's a <code>return</code> statement in the <code>try</code> block. It's used for cleanup like closing files or releasing resources.`
+  },
+  {
+    phase:0,
+    text:"What is the result?",
+    code:`try:\n    x = int("abc")\nexcept ValueError:\n    print("Value")`,
+    opts:["abc (String)","ValueError (Error)","Value (String)","Error (String)"],
+    ans:2,
+    expl:`<code>int("abc")</code> raises a <code>ValueError</code> because <code>"abc"</code> cannot be converted to an integer. The <code>except ValueError</code> block catches it and prints <strong>Value</strong>.`
+  },
+  {
+    phase:0,
+    text:"How do you manually trigger an exception in Python?",
+    opts:["throw (Keyword)","raise (Keyword)","trigger (Keyword)","error (Keyword)"],
+    ans:1,
+    expl:`<code>raise</code> is Python's keyword for manually triggering exceptions. Example: <code>raise ValueError("Bad input")</code>. <code>throw</code> is the equivalent in Java/JavaScript — it doesn't exist in Python.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`try:\n    print("Hello")\nfinally:\n    print("World")`,
+    opts:["Hello (String)","World (String)","Hello World","SyntaxError"],
+    ans:2,
+    expl:`No exception is raised, so <code>print("Hello")</code> runs normally. Then the <code>finally</code> block runs unconditionally → prints <code>"World"</code>. Total output: <strong>Hello</strong> then <strong>World</strong> (on separate lines).`
+  },
+  {
+    phase:0,
+    text:"Which exception is raised when a file is not found?",
+    opts:["IOError (Error)","FileError (Error)","FileNotFoundError","ReadError (Error)"],
+    ans:2,
+    expl:`<code>FileNotFoundError</code> is raised when you try to open a file that doesn't exist. It's a subclass of <code>OSError</code> (and <code>IOError</code> is an alias for <code>OSError</code> in Python 3, but <code>FileNotFoundError</code> is the specific one). <code>FileError</code> and <code>ReadError</code> don't exist.`
+  },
+  {
+    phase:0,
+    text:"What happens here?",
+    code:`try:\n    print(x)\nexcept NameError:\n    print("Name")`,
+    opts:["Name (String)","x (String)","Error (String)","Nothing (Void)"],
+    ans:0,
+    expl:`<code>x</code> is not defined, so <code>print(x)</code> raises a <code>NameError</code>. The <code>except NameError</code> block catches it and prints <strong>Name</strong>.`
+  },
+  {
+    phase:0,
+    text:"Can we have multiple except blocks for one try?",
+    opts:["Yes (Always)","No (Never)","Only one","Error (Syntax)"],
+    ans:0,
+    expl:`<strong>Yes</strong> — you can chain multiple <code>except</code> blocks to handle different exception types. Python checks each one in order and runs the first matching block. Example: <code>except ValueError: ... except TypeError: ...</code>`
+  },
+  {
+    phase:0,
+    text:"What is the purpose of the else block in try-except?",
+    opts:["Catches errors","Always runs","Runs if no error","Handles exit"],
+    ans:2,
+    expl:`The <code>else</code> block runs only when the <code>try</code> block completes <strong>without raising any exception</strong>. It's the "success path". <code>finally</code> always runs; <code>else</code> only runs on success.`
+  },
+
+  // ── ROUND 2: INTERMEDIATE (Q11–15) ──
+  {
+    phase:1,
+    text:"What is the output of this snippet?",
+    code:`try:\n    L = [1, 2]\n    print(L[5])\nexcept IndexError:\n    print("Index")\nexcept Exception:\n    print("General")`,
+    opts:["Index (String)","General (String)","Error (String)","5 (Integer)"],
+    ans:0,
+    expl:`<code>L[5]</code> on a 2-element list raises an <code>IndexError</code>. Python checks the <code>except</code> blocks in order — <code>IndexError</code> matches the first block → prints <strong>Index</strong>. The <code>Exception</code> block is never reached because the first match wins.`
+  },
+  {
+    phase:1,
+    text:"How do you define a User-Defined Exception?",
+    opts:["def MyError():","class MyError(Exception):","class MyError():","raise MyError():"],
+    ans:1,
+    expl:`Custom exceptions are created by subclassing <code>Exception</code> (or any of its subclasses). The correct syntax is <code>class MyError(Exception): pass</code>. This gives your error full exception behaviour including message, traceback, and compatibility with <code>except</code>.`
+  },
+  {
+    phase:1,
+    text:"What happens in this file handling scenario?",
+    code:`try:\n    f = open("data.txt", "r")\nexcept FileNotFoundError:\n    print("Missing")\nfinally:\n    print("Done")`,
+    opts:["Missing (String)","Done (String)","Missing Done","File (Object)"],
+    ans:2,
+    expl:`If <code>data.txt</code> doesn't exist, <code>FileNotFoundError</code> is raised → <code>except</code> prints <code>"Missing"</code>. Then <code>finally</code> runs unconditionally → prints <code>"Done"</code>. Both lines print: <strong>Missing</strong> then <strong>Done</strong>.`
+  },
+  {
+    phase:1,
+    text:"What is the result of this grade conversion logic?",
+    code:`grades = ["90", "A"]\ntry:\n    res = [int(g) for g in grades]\nexcept ValueError:\n    print("Bad")`,
+    opts:['[90, 0]',"Bad (String)","90 (Integer)","Error (String)"],
+    ans:1,
+    expl:`The list comprehension iterates over <code>grades</code>. <code>int("90")</code> succeeds, but <code>int("A")</code> raises a <code>ValueError</code>. The <code>except</code> block catches it and prints <strong>Bad</strong>. The partial result <code>[90]</code> is lost.`
+  },
+  {
+    phase:1,
+    text:"Which statement is true about the finally block?",
+    opts:["It is optional","It catches errors","It skips errors","It replaces try"],
+    ans:0,
+    expl:`The <code>finally</code> block is <strong>optional</strong> — a valid try-except can exist without it. However when present, it always executes. It does not catch errors (that's <code>except</code>), it doesn't skip them, and it doesn't replace <code>try</code>.`
+  },
+
+  // ── ROUND 3: THE PEAK (Q16–20) ──
+  {
+    phase:2,
+    lab:true,
+    text:"LAB QUESTION: What is the output?",
+    code:`def check():\n    try:\n        return "Try"\n    finally:\n        return "Final"\nprint(check())`,
+    opts:["Try (String)","Final (String)","Try Final","Error (Syntax)"],
+    ans:1,
+    expl:`This is a classic Python interview trap. When a <code>return</code> is inside a <code>try</code> block, the <code>finally</code> block still runs <strong>before the function actually returns</strong>. If <code>finally</code> also has a <code>return</code>, it <strong>overrides</strong> the <code>try</code>'s return value. So <code>"Final"</code> replaces <code>"Try"</code> → output is <strong>Final</strong>.`
+  },
+  {
+    phase:2,
+    text:"What is the result?",
+    code:`try:\n    raise Exception("Oops")\nexcept Exception as e:\n    print(e)`,
+    opts:["Exception (Type)","Oops (String)","e (String)","Error (Type)"],
+    ans:1,
+    expl:`<code>raise Exception("Oops")</code> creates an exception with the message <code>"Oops"</code>. The <code>as e</code> clause binds the exception object to <code>e</code>. <code>print(e)</code> calls <code>str(e)</code> which returns the message string → prints <strong>Oops</strong>.`
+  },
+  {
+    phase:2,
+    text:"Analyze this nested structure:",
+    code:`try:\n    try:\n        raise ValueError\n    except NameError:\n        print("Inner")\nexcept ValueError:\n    print("Outer")`,
+    opts:["Inner (String)","Outer (String)","Error (String)","None (Object)"],
+    ans:1,
+    expl:`The inner <code>raise ValueError</code> is raised. The inner <code>except NameError</code> doesn't match <code>ValueError</code>, so it doesn't catch it. The exception propagates to the outer <code>try</code>, where <code>except ValueError</code> catches it → prints <strong>Outer</strong>.`
+  },
+  {
+    phase:2,
+    text:"What is the output of this logic?",
+    code:`try:\n    print(10 / 2)\nexcept:\n    print("Error")\nelse:\n    print("Success")`,
+    opts:["5.0 Success","5.0 Error","Success (String)","Error (String)"],
+    ans:0,
+    expl:`<code>10 / 2</code> = <code>5.0</code> (no exception). So <code>print(5.0)</code> runs → prints <code>5.0</code>. Since no exception was raised, the <code>else</code> block also runs → prints <code>Success</code>. The <code>except</code> block is skipped. Output: <strong>5.0</strong> then <strong>Success</strong>.`
+  },
+  {
+    phase:2,
+    text:"What is the base class for all built-in exceptions?",
+    opts:["Error (Class)","BaseException","Throwable (Class)","Object (Class)"],
+    ans:1,
+    expl:`<strong><code>BaseException</code></strong> is the root of Python's exception hierarchy. <code>Exception</code> (which you normally subclass) is itself a subclass of <code>BaseException</code>. System-exit events like <code>SystemExit</code> and <code>KeyboardInterrupt</code> inherit from <code>BaseException</code> but <em>not</em> from <code>Exception</code>. <code>Throwable</code> is Java's equivalent.`
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0, score = 0, answered = false;
+let userAnswers = new Array(questions.length).fill(null);
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = ROUNDS[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      ${q.lab ? '<div class="lab-tag">⚗️ Lab Question</div>' : ''}
+      <div class="q-text">${q.text}</div>
+      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      <div class="options">
+        ${q.opts.map((o,i) => `
+          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_,i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 Error Whisperer!',    'Flawless — you handle exceptions like a pro.']
+          : pct>=.75? ['🎯 Solid Handler',         'Strong performance — review the Peak questions.']
+          : pct>=.55? ['📚 Getting There',          'Good base — study finally/else behaviour closely.']
+          : pct>=.35? ['🐣 Keep Practising',        'Focus on try/except/finally flow and error types.']
+          :           ['🔁 Back to Basics',          'Start with exception fundamentals and retry.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Round breakdown
+  const tot=[0,0,0], cor=[0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#00c97a','#f59e0b','#ff5f7e'], names=['Foundations','Intermediate','The Peak'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
+    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review list
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div>
+          ${q.lab?'<div class="lab-tag" style="margin-bottom:6px">⚗️ Lab Question</div>':''}
+          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0; answered=false;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

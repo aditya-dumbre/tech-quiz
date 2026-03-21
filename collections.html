@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 Collections Quiz — Python Quiz Hub</title>
+<style>
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #38bdf8;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(56,189,248,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px;
+    color:var(--muted); font-family:'Syne',sans-serif;
+    font-size:.82rem; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#38bdf8,#818cf8); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+
+  .phase-label {
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--border); border-radius:99px;
+    padding:4px 14px; font-size:.78rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:20px;
+  }
+  .diff-badge {
+    font-size:.65rem; padding:2px 7px; border-radius:99px;
+    font-family:'Space Mono',monospace; font-weight:700; letter-spacing:.04em;
+  }
+  .diff-basic    { background:rgba(0,201,122,.15); color:#00c97a; }
+  .diff-medium   { background:rgba(56,189,248,.15); color:#38bdf8; }
+  .diff-hard     { background:rgba(255,79,110,.15); color:#ff4f6e; }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1a2030; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#38bdf8,#818cf8); color:#000; box-shadow:0 4px 20px rgba(56,189,248,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(56,189,248,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>📦 Collections</h2>
+        <p>20 questions · behavioral · basic → hard</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 20</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 20</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA — Collections Behavioral Mock (20 Qs)
+   phase: 0=Basic, 1=Medium, 2=Hard
+   diff label shown in phase-label
+============================================================ */
+const DIFF = ['🟢 Basic', '🔵 Medium', '🔴 Hard'];
+
+const questions = [
+  // ── BASIC ──
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`L = [10, 20]\nL.extend([30, 40])\nprint(len(L))`,
+    opts:["Four items total","Two items total","Five items total","One item total"],
+    ans:0,
+    expl:`<code>extend()</code> unpacks and appends each element of the iterable. Starting with 2 items and extending with 2 more gives a list of <strong>4 items</strong>. <code>append([30,40])</code> would give 3 items (nested list), but <code>extend</code> flattens.`
+  },
+  {
+    phase:0,
+    text:"Which of the following collections is mutable?",
+    opts:["The List type","The Tuple type","The String type","The Float type"],
+    ans:0,
+    expl:`<strong>Lists</strong> are mutable — you can add, remove, or change elements after creation. Tuples and strings are immutable sequences. Floats are a numeric scalar type, not a collection.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`s = "Python"\nprint(s[-2])`,
+    opts:["Character is 'o'","Character is 'n'","Character is 'h'","Character is 't'"],
+    ans:0,
+    expl:`Negative indexing counts from the right. <code>"Python"</code> → P(0) y(1) t(2) h(3) o(4) n(5). Index <code>-1</code> is <code>'n'</code>, index <code>-2</code> is <code><strong>'o'</strong></code>.`
+  },
+  {
+    phase:0,
+    text:"Correct way to clear a list L?",
+    opts:["Use L.clear() method","Use L.delete() method","Use L.remove() method","Use L.empty() method"],
+    ans:0,
+    expl:`<code>L.clear()</code> removes all elements in-place, leaving an empty list <code>[]</code>. <code>L.remove(x)</code> removes the first occurrence of a specific value. <code>delete()</code> and <code>empty()</code> don't exist as list methods.`
+  },
+  {
+    phase:0,
+    text:"Dictionary keys MUST be:",
+    opts:["Immutable Python objects","Mutable Python objects","Only integer values","Only string values"],
+    ans:0,
+    expl:`Dictionary keys must be <strong>hashable</strong>, which means they must be immutable. Strings, numbers, and tuples (of immutables) work. Lists, dicts, and sets are mutable and cannot be keys.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`d = {"x": 10}\nprint(d.get("y", 20))`,
+    opts:["Returns value Twenty","Returns value Ten","Raises KeyError now","Returns None value"],
+    ans:0,
+    expl:`<code>dict.get(key, default)</code> returns the default value when the key doesn't exist, instead of raising a <code>KeyError</code>. Since <code>"y"</code> is not in <code>d</code>, it returns the default <strong>20</strong>.`
+  },
+  {
+    phase:0,
+    text:"Predict the type:",
+    code:`print(type({}))`,
+    opts:["Class of Dict","Class of Set","Class of List","Class of Tuple"],
+    ans:0,
+    expl:`<code>{}</code> with no contents creates an empty <strong>dictionary</strong>, not a set. To create an empty set you must use <code>set()</code>. <code>type({})</code> returns <code>&lt;class 'dict'&gt;</code>.`
+  },
+  {
+    phase:0,
+    text:"How to add an element to a Set?",
+    opts:["Use add method","Use append method","Use insert method","Use push method"],
+    ans:0,
+    expl:`Sets use <code>.add(element)</code> to insert a single item. <code>append()</code> and <code>insert()</code> are list methods. <code>push()</code> doesn't exist in Python's standard collections.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`t = (1, 2, 3)\nt[0] = 4`,
+    opts:["Result is Error","Changes to Four","Creates new Tuple","No change occurs"],
+    ans:0,
+    expl:`Tuples are <strong>immutable</strong>. Any attempt to assign to an index raises <code>TypeError: 'tuple' object does not support item assignment</code>. To "change" a tuple you must create a new one.`
+  },
+
+  // ── MEDIUM ──
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`d = {"a": 1, "b": 2}\nprint(list(d))`,
+    opts:["Only the keys","Only the values","Both as tuples","A dictionary object"],
+    ans:0,
+    expl:`Iterating over a dictionary (or converting it with <code>list()</code>) yields only the <strong>keys</strong>. Use <code>list(d.values())</code> for values, or <code>list(d.items())</code> for key-value tuples.`
+  },
+  {
+    phase:1,
+    text:"Analyze the slice:",
+    code:`L = [0, 1, 2, 3, 4, 5]\nprint(L[::3])`,
+    opts:["List [0, 3]","List [3, 4]","List [0, 1]","List [0, 2]"],
+    ans:0,
+    expl:`<code>L[::3]</code> starts at index 0 and takes every <strong>3rd</strong> element: index 0 → <code>0</code>, index 3 → <code>3</code>. Result: <code>[0, 3]</code>.`
+  },
+  {
+    phase:1,
+    text:"What happens here?",
+    code:`s = {1, 2, 3}\ns.add([4, 5])`,
+    opts:["Result is Error","Added the list","Set stays same","Added two items"],
+    ans:0,
+    expl:`Sets only accept <strong>hashable</strong> elements. Lists are mutable and unhashable, so <code>s.add([4, 5])</code> raises <code>TypeError: unhashable type: 'list'</code>. Use a tuple <code>(4, 5)</code> instead.`
+  },
+  {
+    phase:1,
+    text:"Identity check:",
+    code:`a = [1]\nb = [1]\nprint(a == b, a is b)`,
+    opts:["True and False","True and True","False and True","False and False"],
+    ans:0,
+    expl:`<code>==</code> compares <strong>value</strong> — both lists contain <code>[1]</code> → <code>True</code>. <code>is</code> checks <strong>identity</strong> (same object in memory) — <code>a</code> and <code>b</code> are two separate list objects → <code>False</code>. Output: <code>True False</code>.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`L = [1, 2, 3]\ndel L[:]\nprint(L)`,
+    opts:["An empty list","List with None","NameError occurs now","List stays same"],
+    ans:0,
+    expl:`<code>del L[:]</code> deletes all elements via slice assignment — it clears the list <strong>in-place</strong>, leaving <code>[]</code>. The variable <code>L</code> still exists. This differs from <code>del L</code> which would delete the variable itself.`
+  },
+  {
+    phase:1,
+    text:"What happens here?",
+    code:`a = (1, 2)\nb = (1, 2)\nprint(a is b)`,
+    opts:["Result is False","Result is True","Result is None","Result is Error"],
+    ans:0,
+    expl:`<code>is</code> checks <strong>identity</strong> (same object in memory). For tuples, Python may or may not intern them depending on implementation and context. In CPython for small literal tuples this <em>can</em> return <code>True</code>, but it's <strong>not guaranteed</strong>. The standard expectation and safe answer is <code>False</code> — never rely on <code>is</code> for value comparison.`
+  },
+
+  // ── HARD ──
+  {
+    phase:2,
+    text:"Predict the result:",
+    code:`x = [1, 2, 3]\ny = x\nx = x + [4]\nprint(y)`,
+    opts:["List is [1,2,3,4]","List is [1,2,3]","List is [4]","Raises a TypeError"],
+    ans:1,
+    expl:`<code>y = x</code> makes both point to the same list. But <code>x = x + [4]</code> creates a <strong>brand-new list</strong> and rebinds <code>x</code> to it — <code>y</code> still points to the original <code>[1, 2, 3]</code>. If it had been <code>x += [4]</code> (which calls <code>extend</code> in-place), <code>y</code> would also see <code>[1,2,3,4]</code>.`
+  },
+  {
+    phase:2,
+    text:"What is the output?",
+    code:`print(all([]), any([]))`,
+    opts:["True and False","False and True","True and True","False and False"],
+    ans:0,
+    expl:`<code>all([])</code> returns <strong>True</strong> — vacuous truth: there are no elements to contradict "all are true". <code>any([])</code> returns <strong>False</strong> — no elements exist to satisfy "at least one is true". This is standard mathematical convention for empty iterables.`
+  },
+  {
+    phase:2,
+    text:"Identify the output:",
+    code:`x = [[]] * 2\nx[0].append(5)\nprint(x)`,
+    opts:["Result [[5], [5]]","Result [[5], []]","Result [[], [5]]","Result [[5, 5]]"],
+    ans:0,
+    expl:`<code>[[]] * 2</code> creates a list with <strong>two references to the same inner list object</strong>. So <code>x[0]</code> and <code>x[1]</code> point to the exact same list. Appending to <code>x[0]</code> mutates that shared list — both slots show <code>[5]</code>. To get independent lists, use <code>[[] for _ in range(2)]</code>.`
+  },
+  {
+    phase:2,
+    text:"Slicing replacement:",
+    code:`L = [1, 2, 3]\nL[1:2] = [4, 5]\nprint(L)`,
+    opts:["Result [1,4,5,3]","Result [1,4,5]","Result [1,2,4,5]","Slice Index Error"],
+    ans:0,
+    expl:`Slice assignment <code>L[1:2] = [4, 5]</code> <strong>replaces</strong> the slice from index 1 up to (not including) 2 — that's just the element <code>2</code> — with the items <code>4, 5</code>. The element at index 0 (<code>1</code>) and index 2 (<code>3</code>) are preserved. Result: <code>[1, 4, 5, 3]</code>.`
+  },
+  {
+    phase:2,
+    text:"Set uniqueness check:",
+    code:`s = {True, 1, 1.0, 2}\nprint(len(s))`,
+    opts:["Two items total","Three items total","Four items total","One item total"],
+    ans:0,
+    expl:`In Python, <code>True == 1 == 1.0</code> and they all share the same hash. Sets use hash + equality to determine uniqueness. So <code>True</code>, <code>1</code>, and <code>1.0</code> are considered the <strong>same element</strong>. The set contains <code>{True, 2}</code> → <code>len</code> is <strong>2</strong>.`
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0, score = 0, answered = false;
+let userAnswers = new Array(questions.length).fill(null);
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = DIFF[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      <div class="q-text">${q.text}</div>
+      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      <div class="options">
+        ${q.opts.map((o, i) => `
+          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_, i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 Collections Master!',  'Flawless — you understand Python collections deeply.']
+          : pct>=.75? ['🎯 Sharp Instincts',        'Strong performance — a couple of edge cases to review.']
+          : pct>=.55? ['📚 Getting There',           'Solid base — check the hard questions in the analysis.']
+          : pct>=.35? ['🐣 Keep Digging',            'Review mutability, references, and hashing concepts.']
+          :           ['🔁 Back to Basics',          'Start with list/dict/set fundamentals and retry.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Phase breakdown
+  const tot=[0,0,0], cor=[0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#00c97a','#38bdf8','#ff5f7e'], names=['Basic','Medium','Hard'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
+    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div>
+          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0; answered=false;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
