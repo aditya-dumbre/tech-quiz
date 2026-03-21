@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 OOP Quiz — Python Quiz Hub</title>
+<style>
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #00e5a0;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,160,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px;
+    color:var(--muted); font-family:'Syne',sans-serif;
+    font-size:.82rem; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#00e5a0,#00b4ff); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+  .phase-label { display:inline-flex; align-items:center; background:var(--border); border-radius:99px; padding:4px 14px; font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1e2430; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong); background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong); color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#00e5a0,#00b4ff); color:#000; box-shadow:0 4px 20px rgba(0,229,160,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(0,229,160,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>🧱 Object-Oriented Programming</h2>
+        <p>20 questions · jumbled · medium → hard</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 20</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00e5a0"/>
+              <stop offset="100%" stop-color="#00b4ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 20</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const phases = [
+  "Phase 1: Fundamentals",
+  "Phase 2: Intermediate",
+  "Phase 3: Advanced & Tricky"
+];
+
+const questions = [
+  // ── PHASE 1 (Q1–6) ──
+  {
+    phase:0,
+    text:"The __init__ method is responsible for which task?",
+    opts:["Allocates memory space","Initializes object state","Destroys object instance","Defines class name"],
+    ans:1,
+    expl:`<code>__init__</code> is the <strong>initialiser</strong> — it sets up the initial state of a newly created object by assigning values to instance attributes. Memory allocation is handled by <code>__new__</code>, not <code>__init__</code>.`
+  },
+  {
+    phase:0,
+    text:"Which statement is true regarding the self parameter in Python methods?",
+    opts:["It is a keyword","It is mandatory","It is a convention","It is a constant"],
+    ans:2,
+    expl:`<code>self</code> is purely a <strong>convention</strong> — Python does not enforce the name. You could legally write <code>this</code> or anything else. The first parameter of an instance method always receives the instance automatically; <code>self</code> is just the universal convention everyone follows.`
+  },
+  {
+    phase:0,
+    text:"What is the output of this fundamental snippet?",
+    code:`class A:\n    def __init__(self, x):\n        self.x = x\nobj = A(10)\nprint(obj.x)`,
+    opts:["Prints 10","Prints None","Raises Error","Prints self"],
+    ans:0,
+    expl:`<code>A(10)</code> calls <code>__init__</code> with <code>x=10</code>, storing it as <code>self.x = 10</code>. Accessing <code>obj.x</code> retrieves that stored value → prints <strong>10</strong>.`
+  },
+  {
+    phase:0,
+    text:"What does the Derived class inherit from here?",
+    code:`class Base: pass\nclass Derived(Base): pass`,
+    opts:["Only Base class","Only object class","Both Base and object","No classes"],
+    ans:2,
+    expl:`<code>Derived</code> explicitly inherits from <code>Base</code>. In Python 3, all classes also implicitly inherit from <code>object</code>. So <code>Derived</code> inherits from <strong>both Base and object</strong>. MRO: Derived → Base → object.`
+  },
+  {
+    phase:0,
+    text:"What is the effect of super() in a child class?",
+    opts:["Creates a new class","Calls the parent method","Deletes the child class","Hides private data"],
+    ans:1,
+    expl:`<code>super()</code> returns a proxy to the <strong>parent class</strong>, letting you call its methods. Most commonly used in <code>__init__</code> to run the parent's setup before adding child-specific attributes.`
+  },
+  {
+    phase:0,
+    text:'"Data Hiding" in Python is primarily achieved through:',
+    opts:["Inheritance","Polymorphism","Encapsulation","Abstraction"],
+    ans:2,
+    expl:`<strong>Encapsulation</strong> bundles data and behaviour together and controls access via naming conventions: <code>_var</code> (protected) and <code>__var</code> (name-mangled private). This is Python's mechanism for data hiding.`
+  },
+
+  // ── PHASE 2 (Q7–14) ──
+  {
+    phase:1,
+    text:"Which of the following does Python support?",
+    opts:["Multiple inheritance only","Single inheritance only","All inheritance types","No inheritance types"],
+    ans:2,
+    expl:`Python supports <strong>all inheritance types</strong>: single, multiple, multilevel, hierarchical, and hybrid. The C3 MRO algorithm handles ambiguity in multiple inheritance cleanly.`
+  },
+  {
+    phase:1,
+    text:"This code demonstrates which specific OOP concept?",
+    code:`class Bird:\n    def fly(self): print("Fly")\nclass Penguin(Bird):\n    def fly(self): print("Swim")`,
+    opts:["Method overloading","Method overriding","Data abstraction","Multiple inheritance"],
+    ans:1,
+    expl:`<code>Penguin</code> redefines <code>fly()</code> which already exists in parent <code>Bird</code>. This is <strong>method overriding</strong> — the child provides its own specific implementation of a parent's method.`
+  },
+  {
+    phase:1,
+    text:"What is the output of this attribute check?",
+    code:`class D:\n    def __init__(self):\n        self.val = 1\nd = D()\nprint(hasattr(d, 'val'))`,
+    opts:["Returns True","Returns False","Returns None","Returns Error"],
+    ans:0,
+    expl:`<code>hasattr(obj, name)</code> returns <code>True</code> if the attribute exists on the object. Since <code>self.val = 1</code> is assigned in <code>__init__</code>, <code>d.val</code> exists → <strong>True</strong>.`
+  },
+  {
+    phase:1,
+    text:"In the following snippet, which statement is true?",
+    code:`class P:\n    @classmethod\n    def f(cls): return "C"\n    @staticmethod\n    def g(): return "S"`,
+    opts:["f needs an instance","g needs an instance","f uses the class (cls)","g uses the class"],
+    ans:2,
+    expl:`<code>@classmethod</code> automatically passes the <strong>class</strong> as its first argument (<code>cls</code>). <code>@staticmethod</code> receives <em>no</em> implicit argument — neither instance nor class. Both can be called without creating an object.`
+  },
+  {
+    phase:1,
+    text:"What is the output of this __call__ dunder method?",
+    code:`class T:\n    def __call__(self):\n        return "Called"\nobj = T()\nprint(obj())`,
+    opts:["Called","T","Error","None"],
+    ans:0,
+    expl:`<code>__call__</code> makes an instance <strong>callable like a function</strong>. <code>obj()</code> triggers <code>obj.__call__()</code> → returns <code>"Called"</code> → <code>print()</code> displays it.`
+  },
+  {
+    phase:1,
+    text:"To access the property v correctly, what should you use?",
+    code:`class Counter:\n    def __init__(self):\n        self.__v = 0\n    @property\n    def v(self): return self.__v\nobj = Counter()`,
+    opts:["obj.v()","obj.v","obj.get_v()","obj.__v"],
+    ans:1,
+    expl:`The <code>@property</code> decorator exposes <code>v</code> as an <strong>attribute access</strong>, not a method call. Use <code>obj.v</code> (no parentheses). <code>obj.v()</code> would raise <code>TypeError</code>. <code>obj.__v</code> fails due to name mangling outside the class.`
+  },
+  {
+    phase:1,
+    text:"What is the output of this inheritance check?",
+    code:`class X: pass\nclass Y(X): pass\nclass Z(Y): pass\nprint(issubclass(X, Z))`,
+    opts:["Returns True","Returns False","Raises Error","Returns None"],
+    ans:1,
+    expl:`<code>issubclass(A, B)</code> asks: is <code>A</code> a subclass of <code>B</code>? Here <code>X</code> is the <em>ancestor</em>, not a subclass of <code>Z</code>. Inheritance flows downward (X → Y → Z), not upward → <strong>False</strong>.`
+  },
+  {
+    phase:1,
+    text:"What is the output of this super() call?",
+    code:`class A:\n    def m(self): print("A")\nclass B(A):\n    def m(self):\n        super().m()\n        print("B")\nB().m()`,
+    opts:["Only prints A","Only prints B","Prints A then B","Prints B then A"],
+    ans:2,
+    expl:`<code>B().m()</code> enters <code>B.m</code>. First, <code>super().m()</code> delegates to <code>A.m()</code> → prints <code>"A"</code>. Then execution returns to <code>B.m</code> and prints <code>"B"</code>. Output: <strong>A then B</strong>.`
+  },
+
+  // ── PHASE 3 (Q15–20) ──
+  {
+    phase:2,
+    text:"Analyze the snippet. What is printed?",
+    code:`class Box:\n    def __init__(self, i):\n        self.i = i\nb1 = Box(1)\nb2 = Box(1)\nprint(b1 == b2)`,
+    opts:["True","False","Error","None"],
+    ans:1,
+    expl:`Without defining <code>__eq__</code>, Python compares objects by <strong>identity</strong> (memory address), not by value. <code>b1</code> and <code>b2</code> are two separate objects → <strong>False</strong>. To compare by value, add <code>def __eq__(self, other): return self.i == other.i</code>.`
+  },
+  {
+    phase:2,
+    text:"What is the output of this shared class variable?",
+    code:`class O:\n    x = []\n    def add(self, v):\n        self.x.append(v)\na, b = O(), O()\na.add(1)\nprint(b.x)`,
+    opts:["[1]","[]","Error","None"],
+    ans:0,
+    expl:`<code>x = []</code> is a <strong>class variable</strong> shared across all instances. <code>a.add(1)</code> calls <code>self.x.append(1)</code> — this <em>mutates</em> the shared list in-place (no new instance variable is created). So <code>b.x</code> also shows <code>[1]</code>. This is a classic mutable class variable gotcha.`
+  },
+  {
+    phase:2,
+    text:"What happens in the following __slots__ scenario?",
+    code:`class K:\n    __slots__ = ['a']\nobj = K()\nobj.b = 2`,
+    opts:["Code works fine","Raises AttributeError","Attribute b is created","Memory usage increases"],
+    ans:1,
+    expl:`<code>__slots__</code> <strong>restricts</strong> allowed attributes to only those listed. Trying to set <code>obj.b</code> raises <code>AttributeError: 'K' object has no attribute 'b'</code>. The benefit is lower memory usage — no per-instance <code>__dict__</code> is created.`
+  },
+  {
+    phase:2,
+    text:"Which statement is true for this abstract class setup?",
+    code:`from abc import ABC, abstractmethod\nclass S(ABC):\n    @abstractmethod\n    def m(self): pass\nobj = S()`,
+    opts:["Successful object creation","TypeError during instantiation","ImportError for abc","AttributeError for m"],
+    ans:1,
+    expl:`A class with any unimplemented <code>@abstractmethod</code> <strong>cannot be instantiated</strong>. Attempting it raises <code>TypeError</code>. You must subclass <code>S</code> and provide a concrete implementation of <code>m()</code> before instantiation is allowed.`
+  },
+  {
+    phase:2,
+    text:"How do you access the private variable __v from outside the class?",
+    code:`class B:\n    __v = 5\nobj = B()`,
+    opts:["obj.__v","B.__v","obj._B__v","obj.v"],
+    ans:2,
+    expl:`Python's <strong>name mangling</strong> renames <code>__v</code> to <code>_B__v</code> at compile time. So the correct external access is <code>obj._B__v</code>. <code>obj.__v</code> from outside the class would just create a new unrelated attribute named <code>__v</code>, not access the mangled one.`
+  },
+  {
+    phase:2,
+    text:"Given the code below, what is printed?",
+    code:`class C:\n    x = 1\na, b = C(), C()\nC.x = 2\nprint(a.x)`,
+    opts:["Prints 1","Prints 2","Prints 0","Raises Error"],
+    ans:1,
+    expl:`<code>C.x = 2</code> modifies the <strong>class variable</strong> directly. Since <code>a</code> has no instance variable <code>x</code> of its own, Python's attribute lookup falls through to the class → finds <code>2</code>. Had you done <code>a.x = 99</code> earlier, that would create an instance variable shadowing the class one only for <code>a</code>.`
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0;
+let score = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let answered = false;
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = phases[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      <div class="q-text">${q.text}</div>
+      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      <div class="options">
+        ${q.opts.map((o,i) => `
+          <button class="option-btn" id="opt${i}" onclick="select(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function select(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_,i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 OOP Master!','Exceptional — you know Python OOP inside out.']
+          : pct>=.75? ['🎯 Strong Grasp','Solid understanding with a few edges to sharpen.']
+          : pct>=.55? ['📚 Getting There','Good foundation — review the tricky snippets below.']
+          : pct>=.35? ['🐣 Keep Practising','Focus on the concepts flagged in the analysis.']
+          :           ['🔁 Back to Basics','Study OOP fundamentals and revisit this quiz.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Phase breakdown
+  const tot=[0,0,0], cor=[0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if (userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#00e5a0','#00b4ff','#ff5f7e'], names=['Fundamentals','Intermediate','Advanced'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
+    const w = Math.round(cor[p]/tot[p]*100);
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div>
+          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
